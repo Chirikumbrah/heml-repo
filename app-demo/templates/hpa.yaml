@@ -1,28 +1,26 @@
-{{- if .Values.autoscaling.enabled }}
-apiVersion: autoscaling/v2beta1
+---
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "app-demo.fullname" . }}
-  labels:
-    {{- include "app-demo.labels" . | nindent 4 }}
+  name: "{{ .Values.nginx.name }}"
+  namespace: "{{ .Values.namespace }}"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "app-demo.fullname" . }}
-  minReplicas: {{ .Values.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+    name: "{{ .Values.nginx.name }}"
+  minReplicas: {{ .Values.nginx.hpa.min }}
+  maxReplicas: {{ .Values.nginx.hpa.max }}
   metrics:
-    {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
-    {{- end }}
-    {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.nginx.hpa.avgCpuUtil }}
     - type: Resource
       resource:
         name: memory
-        targetAverageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
-    {{- end }}
-{{- end }}
+        target:
+          type: AverageValue
+          averageValue: "{{ .Values.nginx.hpa.avgRamVal }}"
