@@ -1,0 +1,26 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-app
+  namespace: argocd
+  labels:
+    name: nginx-app
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Chirikumbrah/heml-repo.git
+    targetRevision: HEAD
+    path: app-demo
+    helm:
+      releaseName: nginx-app
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
